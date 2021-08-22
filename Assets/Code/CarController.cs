@@ -5,40 +5,33 @@ using UnityEngine;
 public class CarController : MonoBehaviour {
 
     // Settings
-    public float MoveSpeed = 30;
-    public float SteerAngle = 20;
+    public float MoveSpeed = 50;
+    public float MaxSpeed = 15;
     public float Drag = 0.98f;
-
-    // References
-    public GameObject LeftTire;
-    public GameObject RightTire;
+    public float SteerAngle = 20;
+    public float Traction = 1;
 
     // Variables
     private Vector3 MoveForce;
 
-    // Start is called before the first frame update
-    void Start() {
-
-    }
-
     // Update is called once per frame
     void Update() {
 
-        // Update force,
-        // and move in the direction of the force
+        // Moving
         MoveForce += transform.forward * MoveSpeed * Input.GetAxis("Vertical") * Time.deltaTime;
         transform.position += MoveForce * Time.deltaTime;
 
-        // Slowdown with drag
-        MoveForce *= Drag;
-
-        // Rotate tires
+        // Steering
         float steerInput = Input.GetAxis("Horizontal");
-        Quaternion tireRotation = Quaternion.Euler(Vector3.up * steerInput * 30);
-        LeftTire.transform.localRotation = tireRotation;
-        RightTire.transform.localRotation = tireRotation;
-
-        // Steer car
         transform.Rotate(Vector3.up * steerInput * MoveForce.magnitude * SteerAngle * Time.deltaTime);
+
+        // Drag and max speed limit
+        MoveForce *= Drag;
+        MoveForce = Vector3.ClampMagnitude(MoveForce, MaxSpeed);
+
+        // Traction
+        Debug.DrawRay(transform.position, MoveForce.normalized * 3);
+        Debug.DrawRay(transform.position, transform.forward * 3, Color.blue);
+        MoveForce = Vector3.Lerp(MoveForce.normalized, transform.forward, Traction * Time.deltaTime) * MoveForce.magnitude;
     }
 }
